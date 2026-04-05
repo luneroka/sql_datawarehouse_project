@@ -36,12 +36,13 @@ create table silver.crm_cust_info (
 -- Recreate crm_prd_info table
 create table silver.crm_prd_info (
 	prd_id INT primary key,
+	cat_id VARCHAR(50),
 	prd_key VARCHAR(50),
 	prd_nm VARCHAR(50),
 	prd_cost INT,
 	prd_line VARCHAR(50),
-	prd_start_dt TIMESTAMP,
-	prd_end_dt TIMESTAMP,
+	prd_start_dt DATE,
+	prd_end_dt DATE,
 	dwh_create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	dwh_update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -51,9 +52,9 @@ create table silver.crm_sales_details (
 	sls_ord_num VARCHAR(50) primary key,
 	sls_prd_key VARCHAR(50),
 	sls_cust_id INT,
-	sls_order_dt INT,
-	sls_ship_dt INT,
-	sls_due_dt INT,
+	sls_order_dt DATE,
+	sls_ship_dt DATE,
+	sls_due_dt DATE,
 	sls_sales INT,
 	sls_quantity INT,
 	sls_price INT,
