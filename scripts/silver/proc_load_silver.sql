@@ -131,6 +131,7 @@ select distinct cst_gndr from silver.crm_cust_info;
 select * from silver.crm_cust_info;
 
 
+
 -- =========================================
 -- Processing Table: silver.crm_prd_info
 -- =========================================
@@ -252,6 +253,8 @@ where prd_end_dt < prd_start_dt;
 
 -- Final look to the table
 select * from silver.crm_prd_info;
+
+
 
 -- =========================================
 -- Processing Table: silver.crm_sales_details
@@ -421,6 +424,7 @@ where
 select * from silver.crm_sales_details;
 
 
+
 -- =========================================
 -- Processing Table: silver.erp_cust_az12
 -- =========================================
@@ -434,31 +438,79 @@ truncate table silver.erp_cust_az12;
 
 -- Quality checks on bronze data before transformation
 
--- Check for NULLs or duplicates in PK
-	-- bronze.erp_cust_az12 table
+-- Check cid
+	-- note : done directly on the transformation
 
--- Check for unwanted spaces
-	-- bronze.erp_cust_az12 table
+-- Identify out-of-range dates
+select distinct
+	bdate
+from bronze.erp_cust_az12
+where bdate < '1924-01-01' or bdate > current_date;
 
--- Data standardization & Consistency
-	-- bronze.erp_cust_az12 table
+-- Data standardization & consistency
+select distinct 
+	gen
+from bronze.erp_cust_az12;
 
 -- Transformation
-	-- No transformation code provided for erp_cust_az12
+select
+	case
+		when cid like 'NAS%' then substring(cid, 4, length(cid))
+		else cid
+	end as cid,	
+	case
+		when bdate > current_date then null 
+		else bdate
+	end as bdate,	
+	case 
+		when upper(trim(gen)) in ('F', 'FEMALE') then 'Female'
+		when upper(trim(gen)) in ('M', 'MALE') then 'Male'
+		else 'N/A'
+	end as gen	
+from bronze.erp_cust_az12;
 
 -- Load Data
-	-- No insert code provided for erp_cust_az12
+insert into silver.erp_cust_az12 (
+	cid,
+	bdate,
+	gen
+)
+select
+	case
+		when cid like 'NAS%' then substring(cid, 4, length(cid))
+		else cid
+	end as cid,	
+	case
+		when bdate > current_date then null 
+		else bdate
+	end as bdate,	
+	case 
+		when upper(trim(gen)) in ('F', 'FEMALE') then 'Female'
+		when upper(trim(gen)) in ('M', 'MALE') then 'Male'
+		else 'N/A'
+	end as gen	
+from bronze.erp_cust_az12;
 
 -- Verify quality of silver.erp_cust_az12 data
 
--- Check for NULLs or duplicates in PK
-	-- silver.erp_cust_az12 table
+-- Check cid -> compare match with foreign key
+	-- note : done directly on the transformation
 
--- Check for unwanted spaces
-	-- silver.erp_cust_az12 table
+-- Identify out-of-range dates
+select distinct
+	bdate
+from silver.erp_cust_az12
+where bdate < '1924-01-01' or bdate > current_date;
 
--- Data standardization & Consistency
-	-- silver.erp_cust_az12 table
+-- Data standardization & consistency
+select distinct 
+	gen
+from silver.erp_cust_az12;
+
+
+-- Final look to the table
+select * from silver.erp_cust_az12;
+
 
 
 -- =========================================
@@ -474,31 +526,55 @@ truncate table silver.erp_loc_a101;
 
 -- Quality checks on bronze data before transformation
 
--- Check for NULLs or duplicates in PK
-	-- bronze.erp_loc_a101 table
-
--- Check for unwanted spaces
-	-- bronze.erp_loc_a101 table
+-- Check cid -> compare match with foreign key
+	-- note : done directly on the transformation
 
 -- Data standardization & Consistency
-	-- bronze.erp_loc_a101 table
+select distinct
+	cntry
+from bronze.erp_loc_a101
+order by cntry;
 
 -- Transformation
-	-- No transformation code provided for erp_loc_a101
+select
+	replace(cid, '-', '') as cid,
+	case
+		when trim(cntry) = 'DE' then 'Germany'
+		when trim(cntry) in ('US', 'USA') then 'United States'
+		when trim(cntry) = '' or cntry is null then 'N/A'
+		else trim(cntry)
+	end as cntry	
+from bronze.erp_loc_a101;
 
 -- Load Data
-	-- No insert code provided for erp_loc_a101
+insert into silver.erp_loc_a101 (
+	cid,
+	cntry
+)
+select
+	replace(cid, '-', '') as cid,
+	case
+		when trim(cntry) = 'DE' then 'Germany'
+		when trim(cntry) in ('US', 'USA') then 'United States'
+		when trim(cntry) = '' or cntry is null then 'N/A'
+		else trim(cntry)
+	end as cntry	
+from bronze.erp_loc_a101;
 
 -- Verify quality of silver.erp_loc_a101 data
 
--- Check for NULLs or duplicates in PK
-	-- silver.erp_loc_a101 table
-
--- Check for unwanted spaces
-	-- silver.erp_loc_a101 table
+-- Check cid -> compare match with foreign key
+	-- note : done directly on the transformation
 
 -- Data standardization & Consistency
-	-- silver.erp_loc_a101 table
+select distinct
+	cntry
+from silver.erp_loc_a101
+order by cntry;
+
+-- Final look to the table
+select * from silver.erp_loc_a101;
+
 
 
 -- =========================================
@@ -514,29 +590,57 @@ truncate table silver.erp_px_cat_g1v2;
 
 -- Quality checks on bronze data before transformation
 
--- Check for NULLs or duplicates in PK
-	-- bronze.erp_px_cat_g1v2 table
+-- Check cid -> compare match with foreign key
+	-- note : done directly on the transformation
 
 -- Check for unwanted spaces
-	-- bronze.erp_px_cat_g1v2 table
+select 
+	*
+from bronze.erp_px_cat_g1v2
+where cat != trim(cat) or subcat != trim(subcat) or maintenance != trim(maintenance);
 
--- Data standardization & Consistency
-	-- bronze.erp_px_cat_g1v2 table
+-- Data standardization & Consistency (alternate between cat, subcat and maintenance cols)
+select distinct
+	maintenance
+from bronze.erp_px_cat_g1v2;
 
 -- Transformation
-	-- No transformation code provided for erp_px_cat_g1v2
+select
+	id,
+	cat,
+	subcat,
+	maintenance
+from bronze.erp_px_cat_g1v2;
 
 -- Load Data
-	-- No insert code provided for erp_px_cat_g1v2
+insert into silver.erp_px_cat_g1v2 (
+	id,
+	cat,
+	subcat,
+	maintenance
+)
+select
+	id,
+	cat,
+	subcat,
+	maintenance
+from bronze.erp_px_cat_g1v2;
 
 -- Verify quality of silver.erp_px_cat_g1v2 data
 
--- Check for NULLs or duplicates in PK
-	-- silver.erp_px_cat_g1v2 table
+-- Check cid -> compare match with foreign key
+	-- note : done directly on the transformation
 
 -- Check for unwanted spaces
-	-- silver.erp_px_cat_g1v2 table
+select 
+	*
+from silver.erp_px_cat_g1v2
+where cat != trim(cat) or subcat != trim(subcat) or maintenance != trim(maintenance);
 
--- Data standardization & Consistency
-	-- silver.erp_px_cat_g1v2 table
+-- Data standardization & Consistency (alternate between cat, subcat and maintenance cols)
+select distinct
+	maintenance
+from silver.erp_px_cat_g1v2;
 
+-- Final look to the table
+select * from silver.erp_px_cat_g1v2;
