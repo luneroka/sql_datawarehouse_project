@@ -30,17 +30,31 @@ Usage Example:
 
 -- DROP PRIMARY KEY
 alter table bronze.crm_cust_info drop constraint if exists crm_cust_info_pkey;
+alter table bronze.crm_prd_info drop constraint if exists crm_prd_info_pkey;
+alter table bronze.crm_sales_details drop constraint if exists crm_sales_details_pkey;
+alter table bronze.erp_cust_az12  drop constraint if exists erp_cust_az12_pkey;
+alter table bronze.erp_loc_a101  drop constraint if exists erp_loc_a101_pkey;
+alter table bronze.erp_px_cat_g1v2 drop constraint if exists erp_px_cat_g1v2_pkey;
+
 
 -- Allow NULLs in cst_id
 alter table bronze.crm_cust_info alter column cst_id drop not null;
-
+alter table bronze.crm_prd_info alter column prd_id drop not null;
+alter table bronze.crm_sales_details alter column sls_ord_num drop not null;
+alter table bronze.erp_cust_az12 alter column cid drop not null;
+alter table bronze.erp_loc_a101 alter column cid drop not null;
+alter table bronze.erp_px_cat_g1v2 alter column id drop not null;
 
 -- =========================================
 -- STEP 2: Truncate tables
 -- =========================================
 
 truncate table bronze.crm_cust_info;
-
+truncate table bronze.crm_prd_info;
+truncate table bronze.crm_sales_details;
+truncate table bronze.erp_cust_az12;
+truncate table bronze.erp_loc_a101;
+truncate table bronze.erp_px_cat_g1v2;
 
 -- =========================================
 -- STEP 3: Bulk load data from CSV
@@ -52,5 +66,9 @@ truncate table bronze.crm_cust_info;
 -- STEP 4: Verification
 -- =========================================
 
-select count(*) as total_rows
-from bronze.crm_cust_info;
+select count(*) as total_rows from bronze.crm_cust_info;
+select count(*) as total_rows from bronze.crm_prd_info;
+select count(*) as total_rows from bronze.crm_sales_details;
+select count(*) as total_rows from bronze.erp_cust_az12;
+select count(*) as total_rows from bronze.erp_loc_a101;
+select count(*) as total_rows from bronze.erp_px_cat_g1v2;
