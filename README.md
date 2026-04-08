@@ -136,7 +136,7 @@ sql_datawarehouse_project/
 3. **Install Python dependencies**
 
    ```bash
-   pip install pandas psycopg
+   pip install pandas psycopg python-dotenv
    ```
 
 4. **Initialize the database**
