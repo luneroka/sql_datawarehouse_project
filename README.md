@@ -116,7 +116,8 @@ sql_datawarehouse_project/
 
 - **PostgreSQL 12+** - For database engine
 - **Python 3.8+** - For ETL scripts
-- **psycopg2** or **psycopg** - Python PostgreSQL driver
+- **psycopg** - Python PostgreSQL driver
+- **python-dotenv** - For loading environment variables from `.env`
 
 ### Installation & Setup
 
@@ -139,7 +140,25 @@ sql_datawarehouse_project/
    pip install pandas psycopg python-dotenv
    ```
 
-4. **Initialize the database**
+4. **Configure environment variables**
+
+   Create a `.env` file in the project root:
+
+   ```dotenv
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=data_warehouse
+   DB_USER=your_postgres_user
+   DB_PASSWORD=your_postgres_password
+   DATASETS_DIR=datasets
+   ```
+
+   Notes:
+   - `scripts/bronze/load_bronze.py` reads DB credentials from this file.
+   - `DATASETS_DIR` can be relative (for example `datasets`) or absolute.
+   - `.env` is gitignored and should not be committed.
+
+5. **Initialize the database**
    - Open your PostgreSQL client (psql, DBeaver, pgAdmin, etc.)
    - Connect to the default `postgres` database
    - Run `scripts/init_database.sql` to create schemas and database structure
@@ -149,26 +168,26 @@ sql_datawarehouse_project/
    \i /path/to/scripts/init_database.sql
    ```
 
-5. **Create bronze tables**
+6. **Create bronze tables**
 
    ```sql
    \i /path/to/scripts/bronze/ddl_bronze.sql
    ```
 
-6. **Load source data into bronze layer**
+7. **Load source data into bronze layer**
 
    ```bash
    python scripts/bronze/load_bronze.py
    ```
 
-7. **Create silver tables and transform data**
+8. **Create silver tables and transform data**
 
    ```sql
    \i /path/to/scripts/silver/ddl_silver.sql
    \i /path/to/scripts/silver/proc_load_silver.sql
    ```
 
-8. **Create gold tables and load dimensional model**
+9. **Create gold tables and load dimensional model**
    ```sql
    \i /path/to/scripts/gold/ddl_gold.sql
    ```
